@@ -1,0 +1,28 @@
+# main-stack.yaml
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  VpcStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Capabilities:
+      - CAPABILITY_NAMED_IAM
+      - CAPABILITY_AUTO_EXPAND
+      TemplateBody: !Rain::Embed vpc-stack.yaml
+  PublicRouteTableStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Capabilities:
+      - CAPABILITY_NAMED_IAM
+      - CAPABILITY_AUTO_EXPAND
+      TemplateBody: !Rain::Embed public-routetable-subnet.yaml
+    DependsOn: VpcStack
+  Nat01Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateBody: !Rain::Embed nat01-stack.yaml
+      Capabilities:
+      - CAPABILITY_NAMED_IAM
+      - CAPABILITY_AUTO_EXPAND
+    DependsOn: 
+    - VpcStack
+    - PublicRouteTableStack

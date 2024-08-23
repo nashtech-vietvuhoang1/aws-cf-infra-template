@@ -1,0 +1,60 @@
+# public-routetable-subnet.yaml
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  Environment:
+    Description: Name of Environments
+    Type: String
+    Default: Dev
+    AllowedValues:
+      - Dev
+      - Test
+      - UAT
+      - Prod
+Resources:
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: Fn::ImportValue: !Sub "${AWS::StackName}-VPC"
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - PublicRouteTable
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: 
+    - Fn::ImportValue: !Sub "${AWS::StackName}-IGW"
+    - PublicRouteTable
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: Fn::ImportValue: !Sub "${AWS::StackName}-IGW"
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - DefaultPublicRoute
+Outputs:
+  PublicRouteTable:
+    Description: PublicRouteTable ID
+    Value: !Ref PublicRouteTable
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicRouteTable"

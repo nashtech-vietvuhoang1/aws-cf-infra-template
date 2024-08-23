@@ -1,0 +1,105 @@
+# nat-stack.yaml
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  Environment:
+    Description: Name of Environments
+    Type: String
+    Default: Dev
+    AllowedValues:
+      - Dev
+      - Test
+      - UAT
+      - Prod
+Mappings:
+  PublicSubnetConfig:
+    NatPublicSubnet03:
+      CIDR: 10.0.0.16/29
+Resources:
+  NatPublicSubnet03:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub
+        - ${AWS::Region}${AZ}
+        - AZ: !Select
+            - 0
+            - !GetAZs
+      CidrBlock: !FindInMap
+        - PublicSubnetConfig
+        - NatPublicSubnet03
+        - CIDR
+      VpcId: Fn::ImportValue: !Sub "${AWS::StackName}-VPC"
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - NatPublicSubnet03
+  PublicSubnetRouteTableAssociation03:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn:
+    - NatPublicSubnet03
+    Properties:
+      RouteTableId: Fn::ImportValue: !Sub "${AWS::StackName}-PublicRouteTable"
+      SubnetId: !Ref NatPublicSubnet03
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - PublicSubnetRouteTableAssociation03
+  NatEIP03:
+    Type: AWS::EC2::EIP
+    Prperties:
+      Domain: vpc
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - NatEIP03
+  NatGateway02:
+    Type: AWS::EC2::NatGateway
+    DependsOn:
+    - NatEIP03
+    - NatPublicSubnet03
+    Properties:
+      AllocationId: !GetAtt NatEIP03.AllocationId
+      SubnetId: !Ref NatPublicSubnet03
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - NatGateway03
