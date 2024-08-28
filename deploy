@@ -57,19 +57,23 @@ RET=$?
 
 if [ "$RET" = "0" ]; then
   if aws cloudformation describe-stacks --region ${REGION} --stack-name ${STACKNAME}  2>/dev/null; then
-    aws cloudformation  create-stack  \
-  --template-body file://${TMP_FOLDER}/main-stack.yaml \
-  --stack-name ${STACKNAME} \
-  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
-  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} \
-  --region ${REGION}
-  else
+    echo "Update stack ${STACKNAME}"
     aws cloudformation  update-stack  \
   --template-body file://${TMP_FOLDER}/main-stack.yaml \
   --stack-name ${STACKNAME} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
   --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} \
   --region ${REGION}
+    exit $?
+  else
+    echo "Create stack ${STACKNAME}"
+    aws cloudformation  create-stack  \
+  --template-body file://${TMP_FOLDER}/main-stack.yaml \
+  --stack-name ${STACKNAME} \
+  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
+  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} \
+  --region ${REGION}
+    exit $?
   fi
 else
   echo "Failed"

@@ -17,10 +17,23 @@ Resources:
       TemplateURL: ./vpc-stack.yaml
       Parameters:
         Environment: !Ref Environment
+        StackName: !Ref AWS::StackName
   PublicRouteTable:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./public-routetable-subnet.yaml
       Parameters:
         Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        IgwId: !GetAtt VpcStack.Outputs.IgwId
+        StackName: !Ref AWS::StackName
+  NatGateway01:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./nat01-stack.yaml
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        PublicRouteTableId: !GetAtt PublicRouteTable.Outputs.PublicRouteTableId
+        StackName: !Ref AWS::StackName
 

@@ -8,21 +8,18 @@ AWS CloudFormation Infrastructure Template
 - [AWS CloudFormation Rain](https://github.com/aws-cloudformation/rain)
 - [AWS CloudFormation Template](https://github.com/aws-cloudformation/aws-cloudformation-templates)
 
-### Generate CloudFormation
+## Before execution
 
-```bash
-rainpkg
-```
-## CloudFormation Execution
+CloudFormation requires a S3 bucket to store tempolary template files
 
 ### CloudFormation Validate
 
 ```bash
-aws cloudformation validate-template --template-body file://.tmp/main-stack.yaml
+verify <stack-file>
 ```
 
-### CloudFormation Create
+### CloudFormation Deploy
 
 ```bash
-aws cloudformation create-stack --template-body file://.tmp/main-stack.yaml --stack-name <your-stack-name> --capabilities CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND 
+./deploy <stackname> <deployment-S3-bucket-name> <region> <deployment-environment>
 ```

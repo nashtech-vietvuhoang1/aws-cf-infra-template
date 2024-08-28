@@ -10,6 +10,11 @@ Parameters:
       - Test
       - UAT
       - Prod
+  StackName:
+    Description: Name of the Stack
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9_\-]*'
+    ConstraintDescription: must be alphanumeric
 Mappings:
   VpcConfig:
     VPC:
@@ -32,13 +37,13 @@ Resources:
         - CIDR
       Tags:
         - Key: Application
-          Value: !Ref AWS::StackName
+          Value: !Ref StackName
         - Key: Network
           Value: VPC
         - Key: Name
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
               - VPC
         - Key: Env
@@ -48,16 +53,16 @@ Resources:
     Properties:
       Tags:
         - Key: Application
-          Value: !Ref AWS::StackName
+          Value: !Ref StackName
         - Key: Network
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
         - Key: Name
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
               - IGW
         - Key: Env
@@ -73,16 +78,16 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Application
-          Value: !Ref AWS::StackName
+          Value: !Ref StackName
         - Key: Network
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
         - Key: Name
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
               - DefaultNetworkACL
         - Key: Env
@@ -110,18 +115,12 @@ Resources:
       CidrBlock: 10.0.0.0/16
       Egress: true
 Outputs:
-  VPC:
+  VpcId:
     Description: VPC ID
     Value: !Ref VPC
-    Export:
-      Name: !Sub "${AWS::StackName}-VPC"
-  IGW:
+  IgwId:
     Description: IGW ID
     Value: !Ref InternetGateway
-    Export:
-      Name: !Sub "${AWS::StackName}-IGW"
-  DefaultNetworkACL:
+  DefaultNetworkAclId:
     Description: DefaultNetworkACL ID
     Value: !Ref DefaultNetworkACL
-    Export:
-      Name: !Sub "${AWS::StackName}-DefaultNetworkACL"
