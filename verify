@@ -1,0 +1,5 @@
+#!/bin/sh
+
+APPNAME=$0
+TMP_FOLDER=.tmp
+

@@ -1,0 +1,77 @@
+#!/bin/sh
+
+APPNAME=$0
+TMP_FOLDER=.tmp
+
+usage() {
+    echo "$1"
+    echo ${APPNAME}": <stackname> <deployment-S3-bucket-name> <region> <deployment-environment>"
+    echo "stackname                 [REQUIRED]: your cloudformation stack name"
+    echo "deployment-S3-bucket-name [REQUIRED]: S3 bucket to store the tempolary template file"
+    echo "region                    [OPTIONAL]: AWS Region where the stack will be deployed"
+    echo "deployment-environment    [OPTIONAL]: environment where the stack will be deployed. Valid values: Dev|Test|UAT|Prod"
+}
+
+if [ ! -d ${TMP_FOLDER} ]; then
+    mkdir ${TMP_FOLDER}
+fi
+
+
+if [ ! -z "$1" ]; then
+  STACKNAME=$1
+else 
+  usage "Please provide the stackname"
+  exit 1
+fi
+
+if [ ! -z "$2" ]; then
+  S3bucket=$2
+else 
+  usage "Please provide the deployment-S3-bucket-name"
+  exit 1
+fi
+
+TARGET_ENV=Dev
+REGION=ap-southeast-1
+
+
+if [ ! -z "$3" ]; then
+  REGION=$3
+else 
+  usage "Please provide AWS Region"
+  exit 1
+fi
+
+
+if [ ! -z "$4" ]; then
+  TARGET_ENV=$4
+else 
+  usage "Please provide Target Environment"
+  exit 1
+fi
+
+
+aws cloudformation package --template-file main-stack.yaml --s3-bucket ${S3bucket} --region ${REGION} --output-template-file ./.tmp/main-stack.yaml
+
+RET=$?
+
+if [ "$RET" = "0" ]; then
+  if aws cloudformation describe-stacks --region ${REGION} --stack-name ${STACKNAME}  2>/dev/null; then
+    aws cloudformation  create-stack  \
+  --template-body file://${TMP_FOLDER}/main-stack.yaml \
+  --stack-name ${STACKNAME} \
+  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
+  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} \
+  --region ${REGION}
+  else
+    aws cloudformation  update-stack  \
+  --template-body file://${TMP_FOLDER}/main-stack.yaml \
+  --stack-name ${STACKNAME} \
+  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
+  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} \
+  --region ${REGION}
+  fi
+else
+  echo "Failed"
+  exit ${RET}
+fi

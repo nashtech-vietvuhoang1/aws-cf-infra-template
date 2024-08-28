@@ -42,6 +42,8 @@ Resources:
             - - !Ref AWS::StackName
               - !Ref Environment
               - NatPublicSubnet01
+        - Key: Env
+          Value: !Ref Environment
   PublicSubnetRouteTableAssociation01:
     Type: AWS::EC2::SubnetRouteTableAssociation
     DependsOn:
@@ -63,6 +65,8 @@ Resources:
             - - !Ref AWS::StackName
               - !Ref Environment
               - PublicSubnetRouteTableAssociation01
+        - Key: Env
+          Value: !Ref Environment
   NatEIP01:
     Type: AWS::EC2::EIP
     Prperties:
@@ -81,6 +85,8 @@ Resources:
             - - !Ref AWS::StackName
               - !Ref Environment
               - NatEIP01
+        - Key: Env
+          Value: !Ref Environment
   NatGateway01:
     Type: AWS::EC2::NatGateway
     DependsOn:
@@ -103,3 +109,6 @@ Resources:
             - - !Ref AWS::StackName
               - !Ref Environment
               - NatGateway01
+        - Key: Env
+          Value: !Ref Environment
+
