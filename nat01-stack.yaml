@@ -10,16 +10,27 @@ Parameters:
       - Test
       - UAT
       - Prod
+  VpcId:
+    Description: VPC ID
+    Type: String
+  PublicRouteTableId:
+    Description: PublicRouteTable ID
+    Type: String
+  StackName:
+    Description: Name of the Stack
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9_\-]*'
+    ConstraintDescription: must be alphanumeric
 Mappings:
   PublicSubnetConfig:
     NatPublicSubnet01:
-      CIDR: 10.0.0.0/29
+      CIDR: 10.0.0.0/28
 Resources:
   NatPublicSubnet01:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !Sub
-        - ${AWS::Region}${AZ}
+        - ${AZ}
         - AZ: !Select
             - 0
             - !GetAZs
@@ -27,79 +38,74 @@ Resources:
         - PublicSubnetConfig
         - NatPublicSubnet01
         - CIDR
-      VpcId: Fn::ImportValue: !Sub "${AWS::StackName}-VPC"
+      VpcId: !Ref VpcId
       Tags:
         - Key: Application
-          Value: !Ref AWS::StackName
+          Value: !Ref StackName
         - Key: Network
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
         - Key: Name
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
               - NatPublicSubnet01
+        - Key: Env
+          Value: !Ref Environment
   PublicSubnetRouteTableAssociation01:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    DependsOn:
-    - NatPublicSubnet01
     Properties:
-      RouteTableId: Fn::ImportValue: !Sub "${AWS::StackName}-PublicRouteTable"
+      RouteTableId: !Ref PublicRouteTableId
       SubnetId: !Ref NatPublicSubnet01
-      Tags:
-        - Key: Application
-          Value: !Ref AWS::StackName
-        - Key: Network
-          Value: !Join
-            - "-"
-            - - !Ref AWS::StackName
-              - !Ref Environment
-        - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref AWS::StackName
-              - !Ref Environment
-              - PublicSubnetRouteTableAssociation01
   NatEIP01:
     Type: AWS::EC2::EIP
-    Prperties:
+    Properties:
       Domain: vpc
       Tags:
         - Key: Application
-          Value: !Ref AWS::StackName
+          Value: !Ref StackName
         - Key: Network
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
         - Key: Name
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
               - NatEIP01
+        - Key: Env
+          Value: !Ref Environment
   NatGateway01:
     Type: AWS::EC2::NatGateway
-    DependsOn:
-    - NatEIP01
-    - NatPublicSubnet01
     Properties:
       AllocationId: !GetAtt NatEIP01.AllocationId
       SubnetId: !Ref NatPublicSubnet01
       Tags:
         - Key: Application
-          Value: !Ref AWS::StackName
+          Value: !Ref StackName
         - Key: Network
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
         - Key: Name
           Value: !Join
             - "-"
-            - - !Ref AWS::StackName
+            - - !Ref StackName
               - !Ref Environment
               - NatGateway01
+        - Key: Env
+          Value: !Ref Environment
+Outputs:
+  NatGateway01:
+    Description: NatGateway01 ID
+    Value: !Ref NatGateway01
+  NatPublicSubnet01:
+    Description: NatPublicSubnet01 ID
+    Value: !Ref NatPublicSubnet01
+

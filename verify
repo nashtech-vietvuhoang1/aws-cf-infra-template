@@ -1,0 +1,19 @@
+#!/bin/sh
+
+APPNAME=$0
+TMP_FOLDER=.tmp
+
+if [ ! -z "$1" ]; then
+  STACKNAME=$1
+else 
+  usage "Please provide the stackname"
+  exit 1
+fi
+
+if [ ! -f ${STACKNAME} ]; then
+  echo "${STACKNAME} template does not exist"
+  exit 1
+fi
+
+aws cloudformation validate-template --template-body file://${STACKNAME}
+exit $?
