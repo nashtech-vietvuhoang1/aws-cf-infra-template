@@ -129,7 +129,7 @@ Resources:
   ECSTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: HelloPythonTG
+      Name: !Sub "${StackName}-${Environment}-HelloPythonTG"
       VpcId: !Ref VpcId
       Port: 8080
       Protocol: HTTP
@@ -140,6 +140,22 @@ Resources:
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 5
       UnhealthyThresholdCount: 2
+      Tags:
+        - Key: Application
+          Value: !Ref StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+              - ECSTargetGroup
+        - Key: Env
+          Value: !Ref Environment
   # Listener for the ALB
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -175,7 +191,7 @@ Resources:
   ECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: hello-python-task
+      Family: !Sub "${StackName}-${Environment}-hello-python-task"
       NetworkMode: awsvpc
       Cpu: "256"
       Memory: "512"
@@ -216,7 +232,7 @@ Resources:
   ECSService:
     Type: AWS::ECS::Service
     Properties:
-      ServiceName: hello-python-service
+      ServiceName: !Sub "${StackName}-${Environment}-hello-python-service"
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref ECSTaskDefinition
       DesiredCount: 1
