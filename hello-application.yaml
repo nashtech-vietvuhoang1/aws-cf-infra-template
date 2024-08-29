@@ -184,7 +184,7 @@ Resources:
       ExecutionRoleArn: !GetAtt ECSExecutionRole.Arn
       ContainerDefinitions:
         - Name: hello-python-container
-          Image: ghcr.io/nashtech-vietvuhoang1/hello-python:0.0.1-testtag
+          Image: ghcr.io/nashtech-vietvuhoang1/hello-python:0.0.3
           Essential: true
           PortMappings:
             - ContainerPort: 8080

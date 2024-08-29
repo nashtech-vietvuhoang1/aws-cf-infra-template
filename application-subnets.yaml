@@ -82,7 +82,7 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatPublicSubnet01
+              - PrivateAppSubnet01
         - Key: Env
           Value: !Ref Environment
   PrivateAppSubnetRouteTableAssociation01:
@@ -142,7 +142,7 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatPublicSubnet01
+              - PrivateAppSubnet02
         - Key: Env
           Value: !Ref Environment
   PrivateAppSubnetRouteTableAssociation02:
@@ -182,11 +182,11 @@ Resources:
       AvailabilityZone: !Sub
         - ${AZ}
         - AZ: !Select
-            - 1
+            - 2
             - !GetAZs
       CidrBlock: !FindInMap
         - PrivateSubnetConfig
-        - PrivateAppSubnet02
+        - PrivateAppSubnet03
         - CIDR
       VpcId: !Ref VpcId
       Tags:
@@ -202,7 +202,7 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatPublicSubnet01
+              - PrivateAppSubnet03
         - Key: Env
           Value: !Ref Environment
   PrivateAppSubnetRouteTableAssociation03:

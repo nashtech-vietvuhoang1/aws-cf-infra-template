@@ -17,7 +17,7 @@ Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: ./vpc-stack.yaml
       Parameters:
@@ -26,7 +26,7 @@ Resources:
   PublicSubnets:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: ./public-subnets.yaml
       Parameters:
@@ -37,15 +37,28 @@ Resources:
   NatGateway01:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: ./nat01-stack.yaml
       Parameters:
         Environment: !Ref Environment
         PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
         StackName: !Ref AWS::StackName
+  PrivateSubnets:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      TemplateURL: ./application-subnets.yaml
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        NatGateway01Id: !GetAtt NatGateway01.Outputs.NatGateway01Id
+        StackName: !Ref AWS::StackName
   BastionHost:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: ./bastion-host-stack.yaml
       Parameters:
@@ -56,6 +69,8 @@ Resources:
         KeyName: !Ref BastionHostKeyName
   WebAppLoadBalancer:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: ./web-load-balancer.yaml
       Parameters:
@@ -65,12 +80,17 @@ Resources:
         PublicSubnet02Id: !GetAtt PublicSubnets.Outputs.PublicSubnet02Id
         PublicSubnet03Id: !GetAtt PublicSubnets.Outputs.PublicSubnet03Id
         StackName: !Ref AWS::StackName
-  PrivateSubnets:
+  HelloApplication:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
-      TemplateURL: ./application-subnets.yaml
+      TemplateURL: ./hello-application.yaml
       Parameters:
         Environment: !Ref Environment
         VpcId: !GetAtt VpcStack.Outputs.VpcId
-        NatGateway01Id: !GetAtt NatGateway01.Outputs.NatGateway01Id
+        PrivateAppSubnet01Id: !GetAtt PrivateSubnets.Outputs.PrivateSubnet01Id
+        PrivateAppSubnet02Id: !GetAtt PrivateSubnets.Outputs.PrivateSubnet02Id
+        PrivateAppSubnet03Id: !GetAtt PrivateSubnets.Outputs.PrivateSubnet03Id
+        WebLoadBalancerArnName: !GetAtt WebAppLoadBalancer.Outputs.WebLoadBalancerArnName
         StackName: !Ref AWS::StackName
