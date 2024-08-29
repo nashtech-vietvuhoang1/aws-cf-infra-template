@@ -102,10 +102,9 @@ Resources:
         - Key: Env
           Value: !Ref Environment
 Outputs:
-  NatGateway01:
+  NatGateway01Id:
     Description: NatGateway01 ID
     Value: !Ref NatGateway01
-  NatPublicSubnet01:
+  NatPublicSubnet01Id:
     Description: NatPublicSubnet01 ID
     Value: !Ref NatPublicSubnet01
-

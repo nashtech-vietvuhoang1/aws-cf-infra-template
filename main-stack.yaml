@@ -10,6 +10,9 @@ Parameters:
       - Test
       - UAT
       - Prod
+  BastionHostKeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: String
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
@@ -36,4 +39,13 @@ Resources:
         VpcId: !GetAtt VpcStack.Outputs.VpcId
         PublicRouteTableId: !GetAtt PublicRouteTable.Outputs.PublicRouteTableId
         StackName: !Ref AWS::StackName
-
+  BastionHost:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./bastion-host-stack.yaml
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        NatPublicSubnet01Id: !GetAtt NatGateway01.Outputs.NatPublicSubnet01Id
+        StackName: !Ref AWS::StackName
+        KeyName: !Ref BastionHostKeyName
