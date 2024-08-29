@@ -10,56 +10,15 @@ Parameters:
       - Test
       - UAT
       - Prod
-  VpcId:
-    Description: VPC ID
-    Type: String
-  PublicRouteTableId:
-    Description: PublicRouteTable ID
+  PublicSubnet01Id:
+    Description: PublicSubnet01 ID
     Type: String
   StackName:
     Description: Name of the Stack
     Type: String
     AllowedPattern: '[a-zA-Z0-9_\-]*'
     ConstraintDescription: must be alphanumeric
-Mappings:
-  PublicSubnetConfig:
-    NatPublicSubnet01:
-      CIDR: 10.0.0.0/28
 Resources:
-  NatPublicSubnet01:
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: !Sub
-        - ${AZ}
-        - AZ: !Select
-            - 0
-            - !GetAZs
-      CidrBlock: !FindInMap
-        - PublicSubnetConfig
-        - NatPublicSubnet01
-        - CIDR
-      VpcId: !Ref VpcId
-      Tags:
-        - Key: Application
-          Value: !Ref StackName
-        - Key: Network
-          Value: !Join
-            - "-"
-            - - !Ref StackName
-              - !Ref Environment
-        - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref StackName
-              - !Ref Environment
-              - NatPublicSubnet01
-        - Key: Env
-          Value: !Ref Environment
-  PublicSubnetRouteTableAssociation01:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref PublicRouteTableId
-      SubnetId: !Ref NatPublicSubnet01
   NatEIP01:
     Type: AWS::EC2::EIP
     Properties:
@@ -84,7 +43,7 @@ Resources:
     Type: AWS::EC2::NatGateway
     Properties:
       AllocationId: !GetAtt NatEIP01.AllocationId
-      SubnetId: !Ref NatPublicSubnet01
+      SubnetId: !Ref PublicSubnet01Id
       Tags:
         - Key: Application
           Value: !Ref StackName
@@ -105,6 +64,4 @@ Outputs:
   NatGateway01Id:
     Description: NatGateway01 ID
     Value: !Ref NatGateway01
-  NatPublicSubnet01Id:
-    Description: NatPublicSubnet01 ID
-    Value: !Ref NatPublicSubnet01
+

@@ -16,15 +16,19 @@ Parameters:
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
     Properties:
       TemplateURL: ./vpc-stack.yaml
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
-  PublicRouteTable:
+  PublicSubnets:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
     Properties:
-      TemplateURL: ./public-routetable-subnet.yaml
+      TemplateURL: ./public-subnets.yaml
       Parameters:
         Environment: !Ref Environment
         VpcId: !GetAtt VpcStack.Outputs.VpcId
@@ -32,12 +36,13 @@ Resources:
         StackName: !Ref AWS::StackName
   NatGateway01:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
     Properties:
       TemplateURL: ./nat01-stack.yaml
       Parameters:
         Environment: !Ref Environment
-        VpcId: !GetAtt VpcStack.Outputs.VpcId
-        PublicRouteTableId: !GetAtt PublicRouteTable.Outputs.PublicRouteTableId
+        PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
         StackName: !Ref AWS::StackName
   BastionHost:
     Type: AWS::CloudFormation::Stack
@@ -46,6 +51,6 @@ Resources:
       Parameters:
         Environment: !Ref Environment
         VpcId: !GetAtt VpcStack.Outputs.VpcId
-        NatPublicSubnet01Id: !GetAtt NatGateway01.Outputs.NatPublicSubnet01Id
+        PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
         StackName: !Ref AWS::StackName
         KeyName: !Ref BastionHostKeyName

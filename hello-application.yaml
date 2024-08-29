@@ -1,4 +1,4 @@
-# public-routetable-subnet.yaml
+# application-subnets.yaml
 AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Environment:
@@ -13,19 +13,36 @@ Parameters:
   VpcId:
     Description: VPC ID
     Type: String
-  IgwId:
-    Description: Internet Gateway ID
-    Type: String
   StackName:
     Description: Name of the Stack
     Type: String
     AllowedPattern: '[a-zA-Z0-9_\-]*'
     ConstraintDescription: must be alphanumeric
+  PrivateAppSubnet01:
+    Description: Private App Subnet 01
+    Type: String
+  PrivateAppSubnet02:
+    Description: Private App Subnet 02
+    Type: String
+  PrivateAppSubnet03:
+    Description: Private App Subnet 03
+    Type: String
 Resources:
-  PublicRouteTable:
-    Type: AWS::EC2::RouteTable
+  WebApplicationSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
     Properties:
+      GroupDescription: Enable SSH access via port 22
+      GroupName: WebApplicationSecurityGroup
       VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '8080'
+          ToPort: '8080'
+          CidrIp: 10.0.0.0/24
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '8080'
+          CidrIp: 10.0.0.0/24
       Tags:
         - Key: Application
           Value: !Ref StackName
@@ -39,16 +56,6 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - PublicRouteTable
+              - WebApplicationSecurityGroup
         - Key: Env
           Value: !Ref Environment
-  DefaultPublicRoute:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PublicRouteTable
-      DestinationCidrBlock: "0.0.0.0/0"
-      GatewayId: !Ref IgwId
-Outputs:
-  PublicRouteTableId:
-    Description: PublicRouteTable ID
-    Value: !Ref PublicRouteTable
