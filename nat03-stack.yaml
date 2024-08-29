@@ -24,7 +24,7 @@ Parameters:
 Mappings:
   PublicSubnetConfig:
     NatPublicSubnet03:
-      CIDR: 10.0.0.0/28
+      CIDR: 10.0.0.32/28
 Resources:
   NatPublicSubnet03:
     Type: AWS::EC2::Subnet

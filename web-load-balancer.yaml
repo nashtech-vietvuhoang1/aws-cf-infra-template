@@ -1,4 +1,4 @@
-# nat-stack.yaml
+# public-subnets.yaml
 AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Environment:
@@ -10,8 +10,17 @@ Parameters:
       - Test
       - UAT
       - Prod
+  VpcId:
+    Description: VPC ID
+    Type: String
   PublicSubnet01Id:
     Description: PublicSubnet01 ID
+    Type: String
+  PublicSubnet02Id:
+    Description: PublicSubnet02 ID
+    Type: String
+  PublicSubnet03Id:
+    Description: PublicSubnet03 ID
     Type: String
   StackName:
     Description: Name of the Stack
@@ -19,10 +28,16 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9_\-]*'
     ConstraintDescription: must be alphanumeric
 Resources:
-  NatEIP01:
-    Type: AWS::EC2::EIP
+  LoadBlancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
     Properties:
-      Domain: vpc
+      GroupDescription: Load Balancer Security Group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
       Tags:
         - Key: Application
           Value: !Ref StackName
@@ -36,14 +51,19 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatEIP01
+              - BastionHost
         - Key: Env
           Value: !Ref Environment
-  NatGateway01:
-    Type: AWS::EC2::NatGateway
+  WebLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      AllocationId: !GetAtt NatEIP01.AllocationId
-      SubnetId: !Ref PublicSubnet01Id
+      Name: WebLoadBalancer
+      Subnets:
+        - !Ref PublicSubnet01Id
+        - !Ref PublicSubnet02Id
+        - !Ref PublicSubnet03Id
+      SecurityGroups:
+        - !Ref LoadBlancerSecurityGroup
       Tags:
         - Key: Application
           Value: !Ref StackName
@@ -57,11 +77,17 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatGateway01
+              - WebLoadBalancer
         - Key: Env
           Value: !Ref Environment
 Outputs:
-  NatGateway01Id:
-    Description: NatGateway01 ID
-    Value: !Ref NatGateway01
+  WebLoadBalancerId:
+    Description: Web Load Balancer ID
+    Value: !Ref WebLoadBalancer
+  WebLoadBalancerDNSName:
+    Description: Web Load Balancer DNS Name
+    Value: !GetAtt WebLoadBalancer.DNSName
+  WebLoadBalancerArnName:
+    Description: Web Load Balancer ARN Name
+    Value: !GetAtt WebLoadBalancer.LoadBalancerArn
 

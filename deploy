@@ -5,17 +5,18 @@ TMP_FOLDER=.tmp
 
 usage() {
     echo "$1"
-    echo ${APPNAME}": <stackname> <deployment-S3-bucket-name> <region> <deployment-environment>"
+    echo ${APPNAME}": <stackname> <deployment-S3-bucket-name> <region> <deployment-environment> <key-name>"
     echo "stackname                 [REQUIRED]: your cloudformation stack name"
     echo "deployment-S3-bucket-name [REQUIRED]: S3 bucket to store the tempolary template file"
-    echo "region                    [OPTIONAL]: AWS Region where the stack will be deployed"
-    echo "deployment-environment    [OPTIONAL]: environment where the stack will be deployed. Valid values: Dev|Test|UAT|Prod"
+    echo "key-name                  [REQUIRED]: AWS KeyPair name"
+    echo "region                    [REQUIRED]: AWS Region where the stack will be deployed"
+    echo "deployment-environment    [REQUIRED]: environment where the stack will be deployed. Valid values: Dev|Test|UAT|Prod"
+
 }
 
 if [ ! -d ${TMP_FOLDER} ]; then
     mkdir ${TMP_FOLDER}
 fi
-
 
 if [ ! -z "$1" ]; then
   STACKNAME=$1
@@ -50,6 +51,12 @@ else
   exit 1
 fi
 
+if [ ! -z "$5" ]; then
+  BastionHostKeyName=$5
+else 
+  usage "Please provide AWS BastionHost KeyName"
+  exit 1
+fi
 
 aws cloudformation package --template-file main-stack.yaml --s3-bucket ${S3bucket} --region ${REGION} --output-template-file ./.tmp/main-stack.yaml
 
@@ -62,7 +69,7 @@ if [ "$RET" = "0" ]; then
   --template-body file://${TMP_FOLDER}/main-stack.yaml \
   --stack-name ${STACKNAME} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
-  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} \
+  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ParameterKey=BastionHostKeyName,ParameterValue=${BastionHostKeyName} \
   --region ${REGION}
     exit $?
   else
@@ -71,7 +78,7 @@ if [ "$RET" = "0" ]; then
   --template-body file://${TMP_FOLDER}/main-stack.yaml \
   --stack-name ${STACKNAME} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
-  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} \
+  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ParameterKey=BastionHostKeyName,ParameterValue=${BastionHostKeyName} \
   --region ${REGION}
     exit $?
   fi

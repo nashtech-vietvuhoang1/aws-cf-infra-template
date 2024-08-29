@@ -10,18 +10,25 @@ Parameters:
       - Test
       - UAT
       - Prod
+  BastionHostKeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: String
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: ./vpc-stack.yaml
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
-  PublicRouteTable:
+  PublicSubnets:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
-      TemplateURL: ./public-routetable-subnet.yaml
+      TemplateURL: ./public-subnets.yaml
       Parameters:
         Environment: !Ref Environment
         VpcId: !GetAtt VpcStack.Outputs.VpcId
@@ -29,11 +36,61 @@ Resources:
         StackName: !Ref AWS::StackName
   NatGateway01:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
     Properties:
       TemplateURL: ./nat01-stack.yaml
       Parameters:
         Environment: !Ref Environment
-        VpcId: !GetAtt VpcStack.Outputs.VpcId
-        PublicRouteTableId: !GetAtt PublicRouteTable.Outputs.PublicRouteTableId
+        PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
         StackName: !Ref AWS::StackName
-
+  PrivateSubnets:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      TemplateURL: ./application-subnets.yaml
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        NatGateway01Id: !GetAtt NatGateway01.Outputs.NatGateway01Id
+        StackName: !Ref AWS::StackName
+  BastionHost:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      TemplateURL: ./bastion-host-stack.yaml
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
+        StackName: !Ref AWS::StackName
+        KeyName: !Ref BastionHostKeyName
+  WebAppLoadBalancer:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      TemplateURL: ./web-load-balancer.yaml
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
+        PublicSubnet02Id: !GetAtt PublicSubnets.Outputs.PublicSubnet02Id
+        PublicSubnet03Id: !GetAtt PublicSubnets.Outputs.PublicSubnet03Id
+        StackName: !Ref AWS::StackName
+  HelloApplication:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      TemplateURL: ./hello-application.yaml
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        PrivateAppSubnet01Id: !GetAtt PrivateSubnets.Outputs.PrivateAppSubnet01Id
+        PrivateAppSubnet02Id: !GetAtt PrivateSubnets.Outputs.PrivateAppSubnet02Id
+        PrivateAppSubnet03Id: !GetAtt PrivateSubnets.Outputs.PrivateAppSubnet03Id
+        WebLoadBalancerArnName: !GetAtt WebAppLoadBalancer.Outputs.WebLoadBalancerArnName
+        StackName: !Ref AWS::StackName
