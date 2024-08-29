@@ -89,8 +89,8 @@ Resources:
       Parameters:
         Environment: !Ref Environment
         VpcId: !GetAtt VpcStack.Outputs.VpcId
-        PrivateAppSubnet01Id: !GetAtt PrivateSubnets.Outputs.PrivateSubnet01Id
-        PrivateAppSubnet02Id: !GetAtt PrivateSubnets.Outputs.PrivateSubnet02Id
-        PrivateAppSubnet03Id: !GetAtt PrivateSubnets.Outputs.PrivateSubnet03Id
+        PrivateAppSubnet01Id: !GetAtt PrivateSubnets.Outputs.PrivateAppSubnet01Id
+        PrivateAppSubnet02Id: !GetAtt PrivateSubnets.Outputs.PrivateAppSubnet02Id
+        PrivateAppSubnet03Id: !GetAtt PrivateSubnets.Outputs.PrivateAppSubnet03Id
         WebLoadBalancerArnName: !GetAtt WebAppLoadBalancer.Outputs.WebLoadBalancerArnName
         StackName: !Ref AWS::StackName

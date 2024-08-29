@@ -36,6 +36,8 @@ Mappings:
       HVM64: ami-047bb4163c506cd98
     ap-southeast-1:
       HVM64: ami-0d07675d294f17973
+    ap-southeast-2:
+      HVM64: ami-01fb4de0e9f8f22a7
 Resources:
   BastionHostSecurityGroup:
     Type: AWS::EC2::SecurityGroup
