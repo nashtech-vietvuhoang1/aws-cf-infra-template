@@ -131,7 +131,7 @@ Resources:
     Properties:
       Name: HelloPythonTG
       VpcId: !Ref VpcId
-      Port: 80
+      Port: 8080
       Protocol: HTTP
       TargetType: ip
       HealthCheckIntervalSeconds: 30
@@ -188,7 +188,7 @@ Resources:
           Essential: true
           PortMappings:
             - ContainerPort: 8080
-              HostPort: 80
+              HostPort: 8080
               Protocol: tcp
           LogConfiguration:
             LogDriver: awslogs
@@ -232,7 +232,7 @@ Resources:
             - !Ref WebApplicationSecurityGroup
       LoadBalancers:
         - ContainerName: hello-python-container
-          ContainerPort: 80
+          ContainerPort: 8080
           TargetGroupArn: !Ref ECSTargetGroup
       Tags:
         - Key: Application
