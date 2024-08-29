@@ -54,3 +54,23 @@ Resources:
         PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
         StackName: !Ref AWS::StackName
         KeyName: !Ref BastionHostKeyName
+  WebAppLoadBalancer:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./web-load-balancer.yaml
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
+        PublicSubnet02Id: !GetAtt PublicSubnets.Outputs.PublicSubnet02Id
+        PublicSubnet03Id: !GetAtt PublicSubnets.Outputs.PublicSubnet03Id
+        StackName: !Ref AWS::StackName
+  PrivateSubnets:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./application-subnets.yaml
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt VpcStack.Outputs.VpcId
+        NatGateway01Id: !GetAtt NatGateway01.Outputs.NatGateway01Id
+        StackName: !Ref AWS::StackName

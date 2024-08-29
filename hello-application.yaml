@@ -18,14 +18,17 @@ Parameters:
     Type: String
     AllowedPattern: '[a-zA-Z0-9_\-]*'
     ConstraintDescription: must be alphanumeric
-  PrivateAppSubnet01:
-    Description: Private App Subnet 01
+  PrivateAppSubnet01Id:
+    Description: Private App Subnet 01 ID
     Type: String
-  PrivateAppSubnet02:
-    Description: Private App Subnet 02
+  PrivateAppSubnet02Id:
+    Description: Private App Subnet 02 ID
     Type: String
-  PrivateAppSubnet03:
-    Description: Private App Subnet 03
+  PrivateAppSubnet03Id:
+    Description: Private App Subnet 03 ID
+    Type: String
+  WebLoadBalancerArnName:
+    Description: Web Load Balancer ARN Name
     Type: String
 Resources:
   WebApplicationSecurityGroup:
@@ -57,5 +60,193 @@ Resources:
             - - !Ref StackName
               - !Ref Environment
               - WebApplicationSecurityGroup
+        - Key: Env
+          Value: !Ref Environment
+  ECSExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: !Sub "${StackName}-${Environment}-ECSExecutionPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ecr:GetDownloadUrlForLayer"
+                  - "ecr:BatchGetImage"
+                  - "ecr:GetAuthorizationToken"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
+      Tags:
+        - Key: Application
+          Value: !Ref StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+              - LogGroup
+        - Key: Env
+          Value: !Ref Environment
+  # Log Group for ECS
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub "/ecs-${StackName}-${Environment}/hello-python-log-group"
+      RetentionInDays: 7
+      Tags:
+        - Key: Application
+          Value: !Ref StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+              - LogGroup
+        - Key: Env
+          Value: !Ref Environment
+  # Target Group for ECS
+  ECSTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: HelloPythonTG
+      VpcId: !Ref VpcId
+      Port: 80
+      Protocol: HTTP
+      TargetType: ip
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /ping
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+  # Listener for the ALB
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ECSTargetGroup
+      LoadBalancerArn: !Ref WebLoadBalancerArnName
+      Port: 80
+      Protocol: HTTP
+  # ECS Cluster
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: HelloPythonCluster
+      Tags:
+        - Key: Application
+          Value: !Ref StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+              - ECSCluster
+        - Key: Env
+          Value: !Ref Environment
+  # ECS Task Definition
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: hello-python-task
+      NetworkMode: awsvpc
+      Cpu: "256"
+      Memory: "512"
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt ECSExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: hello-python-container
+          Image: ghcr.io/nashtech-vietvuhoang1/hello-python:0.0.1-testtag
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8080
+              HostPort: 80
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: hello-python
+      Tags:
+        - Key: Application
+          Value: !Ref StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+              - ECSService
+        - Key: Env
+          Value: !Ref Environment
+  # ECS Service
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: hello-python-service
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref ECSTaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref PrivateAppSubnet01Id
+            - !Ref PrivateAppSubnet02Id
+            - !Ref PrivateAppSubnet03Id
+          SecurityGroups:
+            - !Ref WebApplicationSecurityGroup
+      LoadBalancers:
+        - ContainerName: hello-python-container
+          ContainerPort: 80
+          TargetGroupArn: !Ref ECSTargetGroup
+      Tags:
+        - Key: Application
+          Value: !Ref StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+              - ECSService
         - Key: Env
           Value: !Ref Environment

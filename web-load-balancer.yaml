@@ -87,3 +87,7 @@ Outputs:
   WebLoadBalancerDNSName:
     Description: Web Load Balancer DNS Name
     Value: !GetAtt WebLoadBalancer.DNSName
+  WebLoadBalancerArnName:
+    Description: Web Load Balancer ARN Name
+    Value: !GetAtt WebLoadBalancer.LoadBalancerArn
+
