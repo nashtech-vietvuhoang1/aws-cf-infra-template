@@ -20,25 +20,21 @@ fi
 
 if [ ! -z "$1" ]; then
   STACKNAME=$1
-else 
+elif [ -z "${STACKNAME}" ]; then
   usage "Please provide the stackname"
   exit 1
 fi
 
 if [ ! -z "$2" ]; then
-  S3bucket=$2
-else 
+  S3_BUCKET=$2
+elif [ -z "${S3_BUCKET}" ]; then
   usage "Please provide the deployment-S3-bucket-name"
   exit 1
 fi
 
-TARGET_ENV=Dev
-REGION=ap-southeast-1
-
-
 if [ ! -z "$3" ]; then
   REGION=$3
-else 
+elif [ -z "${REGION}" ]; then
   usage "Please provide AWS Region"
   exit 1
 fi
@@ -46,19 +42,21 @@ fi
 
 if [ ! -z "$4" ]; then
   TARGET_ENV=$4
-else 
+elif [ -z "${TARGET_ENV}" ]; then
   usage "Please provide Target Environment"
   exit 1
 fi
 
 if [ ! -z "$5" ]; then
-  BastionHostKeyName=$5
-else 
+  BASTION_HOST_KEY_NAME=$5
+elif [ -z "${BASTION_HOST_KEY_NAME}" ]; then
   usage "Please provide AWS BastionHost KeyName"
   exit 1
 fi
 
-aws cloudformation package --template-file main-stack.yaml --s3-bucket ${S3bucket} --region ${REGION} --output-template-file ./.tmp/main-stack.yaml
+
+
+aws cloudformation package --template-file main-stack.yaml --s3-bucket ${S3_BUCKET} --region ${REGION} --output-template-file ./.tmp/main-stack.yaml
 
 RET=$?
 
@@ -69,7 +67,7 @@ if [ "$RET" = "0" ]; then
   --template-body file://${TMP_FOLDER}/main-stack.yaml \
   --stack-name ${STACKNAME} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
-  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ParameterKey=BastionHostKeyName,ParameterValue=${BastionHostKeyName} \
+  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ParameterKey=BastionHostKeyName,ParameterValue=${BASTION_HOST_KEY_NAME} \
   --region ${REGION}
     exit $?
   else
@@ -78,7 +76,7 @@ if [ "$RET" = "0" ]; then
   --template-body file://${TMP_FOLDER}/main-stack.yaml \
   --stack-name ${STACKNAME} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
-  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ParameterKey=BastionHostKeyName,ParameterValue=${BastionHostKeyName} \
+  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ParameterKey=BastionHostKeyName,ParameterValue=${BASTION_HOST_KEY_NAME} \
   --region ${REGION}
     exit $?
   fi

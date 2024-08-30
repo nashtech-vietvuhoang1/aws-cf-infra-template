@@ -30,6 +30,11 @@ Parameters:
   WebLoadBalancerArnName:
     Description: Web Load Balancer ARN Name
     Type: String
+Mappings:
+  Applications:
+    HelloPython:
+      Repository: ghcr.io/nashtech-vietvuhoang1/hello-python
+      Version: 0.0.3
 Resources:
   WebApplicationSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -170,7 +175,7 @@ Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: HelloPythonCluster
+      ClusterName: !Sub "${StackName}-${Environment}-hello-python-cluster"
       Tags:
         - Key: Application
           Value: !Ref StackName
@@ -200,7 +205,10 @@ Resources:
       ExecutionRoleArn: !GetAtt ECSExecutionRole.Arn
       ContainerDefinitions:
         - Name: hello-python-container
-          Image: ghcr.io/nashtech-vietvuhoang1/hello-python:0.0.3
+          Image: !Join 
+            - ":"
+            - - !FindInMap [Applications, HelloPython, Repository]
+              - !FindInMap [Applications, HelloPython, Version]
           Essential: true
           PortMappings:
             - ContainerPort: 8080
@@ -235,7 +243,7 @@ Resources:
       ServiceName: !Sub "${StackName}-${Environment}-hello-python-service"
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref ECSTaskDefinition
-      DesiredCount: 1
+      DesiredCount: 2
       LaunchType: FARGATE
       NetworkConfiguration:
         AwsvpcConfiguration:
