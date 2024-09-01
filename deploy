@@ -2,10 +2,13 @@
 
 APPNAME=$0
 TMP_FOLDER=.tmp
+INFRA_FOLDER=infra
+PIPELINE_FOLDER=pipeline
 
 usage() {
     echo "$1"
-    echo ${APPNAME}": <stackname> <deployment-S3-bucket-name> <region> <deployment-environment> <key-name>"
+    echo ${APPNAME}": <mode> <stackname> <deployment-S3-bucket-name> <region> <deployment-environment> <key-name>"
+    echo "mode                      [REQUIRED]: Deployment options infra|pipeline"
     echo "stackname                 [REQUIRED]: your cloudformation stack name"
     echo "deployment-S3-bucket-name [REQUIRED]: S3 bucket to store the tempolary template file"
     echo "key-name                  [REQUIRED]: AWS KeyPair name"
@@ -13,41 +16,57 @@ usage() {
     echo "region                    [OPTIONAL]: AWS Region where the stack will be deployed"
 }
 
-if [ ! -d ${TMP_FOLDER} ]; then
-    mkdir ${TMP_FOLDER}
-fi
+MODE=${INFRA_FOLDER}
 
 if [ ! -z "$1" ]; then
-  STACKNAME=$1
+  MODE=$1
+else
+  usage "Please provide mode of deployment (infra|pipeline)"
+  exit 1
+fi
+
+if [ ! -d "${MODE}" ]; then
+  usage "Invalid mode of deployment"
+  exit 1
+fi 
+
+FULL_TMP_FOLDER=${TMP_FOLDER}/${MODE}
+
+if [ ! -d "${FULL_TMP_FOLDER}" ]; then
+    mkdir -p ${FULL_TMP_FOLDER}
+fi
+
+if [ ! -z "$2" ]; then
+  STACKNAME=$2
 elif [ -z "${STACKNAME}" ]; then
   usage "Please provide the stackname"
   exit 1
 fi
 
-if [ ! -z "$2" ]; then
-  S3_BUCKET=$2
+if [ ! -z "$3" ]; then
+  S3_BUCKET=$3
 elif [ -z "${S3_BUCKET}" ]; then
   usage "Please provide the deployment-S3-bucket-name"
   exit 1
 fi
 
-if [ ! -z "$3" ]; then
-  TARGET_ENV=$3
+if [ ! -z "$4" ]; then
+  TARGET_ENV=$4
 elif [ -z "${TARGET_ENV}" ]; then
   usage "Please provide Target Environment"
   exit 1
 fi
 
-if [ ! -z "$4" ]; then
-  BASTION_HOST_KEY_NAME=$4
+if [ ! -z "$5" ]; then
+  BASTION_HOST_KEY_NAME=$5
 elif [ -z "${BASTION_HOST_KEY_NAME}" ]; then
   usage "Please provide AWS BastionHost KeyName"
   exit 1
 fi
 
-if [ ! -z "$5" ]; then
-  REGION=$5
-fi 
+if [ ! -z "$6" ]; then
+  REGION=$6
+fi
 
 AWS_REGION=""
 
@@ -62,7 +81,7 @@ if [ ! -z "$ROLE_ARN" ]; then
 fi
 
 
-aws cloudformation package --template-file main-stack.yaml --s3-bucket ${S3_BUCKET} --region ${REGION} --output-template-file ./.tmp/main-stack.yaml
+aws cloudformation package --template-file ${MODE}/main-stack.yaml --s3-bucket ${S3_BUCKET} --region ${REGION} --output-template-file ./${FULL_TMP_FOLDER}/main-stack.yaml
 
 RET=$?
 
@@ -70,7 +89,7 @@ if [ "$RET" = "0" ]; then
   if aws cloudformation describe-stacks ${AWS_REGION} --stack-name ${STACKNAME}  2>/dev/null; then
     echo "Update stack ${STACKNAME}"
     aws cloudformation  update-stack  \
-  --template-body file://${TMP_FOLDER}/main-stack.yaml \
+  --template-body file://${FULL_TMP_FOLDER}/main-stack.yaml \
   --stack-name ${STACKNAME} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
   --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ParameterKey=BastionHostKeyName,ParameterValue=${BASTION_HOST_KEY_NAME} ${AWS_REGION} ${ROLE_ARN_PARAM}
@@ -78,7 +97,7 @@ if [ "$RET" = "0" ]; then
   else
     echo "Create stack ${STACKNAME}"
     aws cloudformation  create-stack  \
-  --template-body file://${TMP_FOLDER}/main-stack.yaml \
+  --template-body file://${FULL_TMP_FOLDER}/main-stack.yaml \
   --stack-name ${STACKNAME} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
   --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ParameterKey=BastionHostKeyName,ParameterValue=${BASTION_HOST_KEY_NAME} ${AWS_REGION} ${ROLE_ARN_PARAM}
