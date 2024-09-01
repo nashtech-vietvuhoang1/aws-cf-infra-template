@@ -10,7 +10,6 @@ usage() {
     echo ${APPNAME}": <stackname> <deployment-S3-bucket-name> <region> <deployment-environment> <key-name>"
     echo "stackname                 [REQUIRED]: your cloudformation stack name"
     echo "deployment-S3-bucket-name [REQUIRED]: S3 bucket to store the tempolary template file"
-    echo "key-name                  [REQUIRED]: AWS KeyPair name"
     echo "deployment-environment    [REQUIRED]: environment where the stack will be deployed. Valid values: Dev|Test|UAT|Prod"
     echo "region                    [OPTIONAL]: AWS Region where the stack will be deployed"
 }
@@ -45,14 +44,7 @@ elif [ -z "${TARGET_ENV}" ]; then
 fi
 
 if [ ! -z "$4" ]; then
-  BASTION_HOST_KEY_NAME=$4
-elif [ -z "${BASTION_HOST_KEY_NAME}" ]; then
-  usage "Please provide AWS BastionHost KeyName"
-  exit 1
-fi
-
-if [ ! -z "$5" ]; then
-  REGION=$5
+  REGION=$4
 fi
 
 AWS_REGION=""
