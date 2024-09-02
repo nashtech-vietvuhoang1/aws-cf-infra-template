@@ -22,6 +22,9 @@ Parameters:
     Description: GitHub Repository Name
     Type: String
     Default: aws-cf-infra-template
+  GitHubBranchName:
+    Description: GitHub Branch Name
+    Type: String
 Resources:
   RolesStack:
     Type: AWS::CloudFormation::Stack
@@ -99,7 +102,7 @@ Resources:
         CodePipelineServiceRoleArn: !GetAtt RolesStack.Outputs.CodePipelineServiceRoleArn
         GitHubConnectionArn: !Ref GitHubConnectionArn
         GitHubRepositoryName: !Ref GitHubRepositoryName
-        GitHubBranchName: !Ref Environment
+        GitHubBranchName: !Ref GitHubBranchName
         CodeBuildProject: !GetAtt CodeBuildStack.Outputs.CodeBuildProject
         ArtifactBucket: !GetAtt S3BucketStack.Outputs.ArtifactBucket
       Tags:

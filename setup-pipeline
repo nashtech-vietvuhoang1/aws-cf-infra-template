@@ -12,7 +12,8 @@ usage() {
     echo " STACKNAME                 [REQUIRED]: your cloudformation stack name"
     echo " S3_BUCKET                 [REQUIRED]: S3 bucket to store the tempolary template file"    
     echo " TARGET_ENV                [REQUIRED]: environment where the stack will be deployed. Valid values: dev|test|uat|prod"    
-    echo " GIT_CONNECTION_ID         [REQUIRED]: GitHub Connection ID"    
+    echo " GIT_BRANCH                [OPTIONAL]: GitHub branch name"    
+    echo " GIT_CONNECTION_ARN        [REQUIRED]: GitHub Connection Arn"    
     echo " BASTION_HOST_KEY_NAME     [REQUIRED]: AWS KeyPair name"
     echo " REGION                    [OPTIONAL]: AWS Region where the stack will be deployed"
 
@@ -42,16 +43,19 @@ if [ -z "${TARGET_ENV}" ]; then
   exit 1
 fi
 
+PARAMETERS="--parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} "
+
 AWS_REGION=""
 
 if [ ! -z "${REGION}" ]; then
   AWS_REGION="--region ${REGION}"
 fi
 
-CONNECTION_ID=""
+CONNECTION_ARN=""
 
-if [ ! -z "${GIT_CONNECTION_ID}" ]; then
-  CONNECTION_ID="ParameterKey=GitHubConnectionArn,ParameterValue=${GIT_CONNECTION_ID}"
+if [ ! -z "${GIT_CONNECTION_ARN}" ]; then
+  CONNECTION_ARN="ParameterKey=GitHubConnectionArn,ParameterValue=${GIT_CONNECTION_ARN}"
+  PARAMETERS="${PARAMETERS} ${CONNECTION_ARN}"
 else
   usage "Please provide the deployment-S3-bucket-name"
   exit 1
@@ -64,7 +68,18 @@ if [ -z "${BASTION_HOST_KEY_NAME}" ]; then
   exit 1
 else 
   BASTION_HOST_KEY_NAME_PARAM="ParameterKey=BastionHostKeyName,ParameterValue=${BASTION_HOST_KEY_NAME}"
+  PARAMETERS="${PARAMETERS} ${BASTION_HOST_KEY_NAME_PARAM}"
 fi
+
+GIT_BRANCH_PARAM=""
+
+if [ -z "${GIT_BRANCH}" ]; then
+  GIT_BRANCH_PARAM="ParameterKey=GitHubBranchName,ParameterValue=${TARGET_ENV}"
+else 
+  GIT_BRANCH_PARAM="ParameterKey=GitHubBranchName,ParameterValue=${GIT_BRANCH}"
+fi
+
+PARAMETERS="${PARAMETERS} ${GIT_BRANCH_PARAM}"
 
 aws cloudformation package --template-file ${MODE}/main-stack.yaml --s3-bucket ${S3_BUCKET} --region ${REGION} --output-template-file ./${FULL_TMP_FOLDER}/main-stack.yaml
 
@@ -77,7 +92,7 @@ if [ "$RET" = "0" ]; then
   --template-body file://${FULL_TMP_FOLDER}/main-stack.yaml \
   --stack-name ${STACKNAME} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
-  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ${BASTION_HOST_KEY_NAME_PARAM} ${CONNECTION_ID} ${AWS_REGION}
+  ${PARAMETERS} ${AWS_REGION}
     exit $?
   else
     echo "Create stack ${STACKNAME}"
@@ -85,7 +100,7 @@ if [ "$RET" = "0" ]; then
   --template-body file://${FULL_TMP_FOLDER}/main-stack.yaml \
   --stack-name ${STACKNAME} \
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM  CAPABILITY_AUTO_EXPAND  \
-  --parameters  ParameterKey=Environment,ParameterValue=${TARGET_ENV} ${BASTION_HOST_KEY_NAME_PARAM} ${CONNECTION_ID} ${AWS_REGION}
+  ${PARAMETERS} ${AWS_REGION}
     exit $?
   fi
 else
