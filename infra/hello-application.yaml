@@ -1,15 +1,18 @@
-# application-subnets.yaml
+# hello-application.yaml
 AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Environment:
     Description: Name of Environments
     Type: String
-    Default: Dev
     AllowedValues:
       - Dev
       - Test
       - UAT
       - Prod
+      - dev
+      - test
+      - uat
+      - prod
   VpcId:
     Description: VPC ID
     Type: String
@@ -112,7 +115,7 @@ Resources:
     DeletionPolicy: Delete
     UpdateReplacePolicy: Delete
     Properties:
-      LogGroupName: !Sub "/ecs-${StackName}-${Environment}/hello-python-log-group"
+      LogGroupName: !Sub "/ecs/${StackName}/${Environment}/hello-python"
       RetentionInDays: 7
       Tags:
         - Key: Application

@@ -4,12 +4,15 @@ Parameters:
   Environment:
     Description: Name of Environments
     Type: String
-    Default: Dev
     AllowedValues:
       - Dev
       - Test
       - UAT
       - Prod
+      - dev
+      - test
+      - uat
+      - prod
   BastionHostKeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: String
@@ -23,6 +26,22 @@ Resources:
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - VpcStack
+        - Key: Env
+          Value: !Ref Environment
   PublicSubnets:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Delete
@@ -34,6 +53,22 @@ Resources:
         VpcId: !GetAtt VpcStack.Outputs.VpcId
         IgwId: !GetAtt VpcStack.Outputs.IgwId
         StackName: !Ref AWS::StackName
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - PublicSubnets
+        - Key: Env
+          Value: !Ref Environment
   NatGateway01:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Delete
@@ -44,6 +79,22 @@ Resources:
         Environment: !Ref Environment
         PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
         StackName: !Ref AWS::StackName
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - NatGateway01
+        - Key: Env
+          Value: !Ref Environment
   PrivateSubnets:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Delete
@@ -55,6 +106,22 @@ Resources:
         VpcId: !GetAtt VpcStack.Outputs.VpcId
         NatGateway01Id: !GetAtt NatGateway01.Outputs.NatGateway01Id
         StackName: !Ref AWS::StackName
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - PrivateSubnets
+        - Key: Env
+          Value: !Ref Environment
   BastionHost:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Delete
@@ -67,6 +134,22 @@ Resources:
         PublicSubnet01Id: !GetAtt PublicSubnets.Outputs.PublicSubnet01Id
         StackName: !Ref AWS::StackName
         KeyName: !Ref BastionHostKeyName
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - BastionHost
+        - Key: Env
+          Value: !Ref Environment
   WebAppLoadBalancer:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Delete
@@ -80,6 +163,22 @@ Resources:
         PublicSubnet02Id: !GetAtt PublicSubnets.Outputs.PublicSubnet02Id
         PublicSubnet03Id: !GetAtt PublicSubnets.Outputs.PublicSubnet03Id
         StackName: !Ref AWS::StackName
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - WebAppLoadBalancer
+        - Key: Env
+          Value: !Ref Environment
   HelloApplication:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Delete
@@ -94,3 +193,19 @@ Resources:
         PrivateAppSubnet03Id: !GetAtt PrivateSubnets.Outputs.PrivateAppSubnet03Id
         WebLoadBalancerArnName: !GetAtt WebAppLoadBalancer.Outputs.WebLoadBalancerArnName
         StackName: !Ref AWS::StackName
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - !Ref Environment
+              - HelloApplication
+        - Key: Env
+          Value: !Ref Environment

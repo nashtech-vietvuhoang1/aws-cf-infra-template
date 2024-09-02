@@ -1,5 +1,4 @@
-# nat-stack.yaml
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   Environment:
     Description: Name of Environments
@@ -13,58 +12,52 @@ Parameters:
       - test
       - uat
       - prod
-  PublicSubnet01Id:
-    Description: PublicSubnet01 ID
-    Type: String
   StackName:
     Description: Name of the Stack
     Type: String
     AllowedPattern: '[a-zA-Z0-9_\-]*'
     ConstraintDescription: must be alphanumeric
 Resources:
-  NatEIP01:
-    Type: AWS::EC2::EIP
+  # S3 Bucket for Artifacts
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
     Properties:
-      Domain: vpc
+      BucketName: !Sub "${AWS::StackName}-${Environment}-artifacts"
+      VersioningConfiguration:
+        Status: Enabled
       Tags:
-        - Key: Application
+        - Key: Deployment
           Value: !Ref StackName
-        - Key: Network
-          Value: !Join
-            - "-"
-            - - !Ref StackName
-              - !Ref Environment
         - Key: Name
           Value: !Join
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatEIP01
+              - ArtifactBucket
         - Key: Env
           Value: !Ref Environment
-  NatGateway01:
-    Type: AWS::EC2::NatGateway
+  # S3 Bucket For CloudFormation package
+  CfPackageBucket:
+    Type: AWS::S3::Bucket
     Properties:
-      AllocationId: !GetAtt NatEIP01.AllocationId
-      SubnetId: !Ref PublicSubnet01Id
+      BucketName: !Sub "${StackName}-${Environment}-cfpackage"
+      VersioningConfiguration:
+        Status: Enabled
       Tags:
-        - Key: Application
+        - Key: Deployment
           Value: !Ref StackName
-        - Key: Network
-          Value: !Join
-            - "-"
-            - - !Ref StackName
-              - !Ref Environment
         - Key: Name
           Value: !Join
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatGateway01
+              - CfPackageBucket
         - Key: Env
           Value: !Ref Environment
 Outputs:
-  NatGateway01Id:
-    Description: NatGateway01 ID
-    Value: !Ref NatGateway01
-
+  ArtifactBucket:
+    Description: S3 Bucket for Artifacts
+    Value: !Ref ArtifactBucket
+  CfPackageBucket:
+    Description: S3 Bucket For CloudFormation package
+    Value: !Ref CfPackageBucket

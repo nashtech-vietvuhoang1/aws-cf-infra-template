@@ -4,12 +4,15 @@ Parameters:
   Environment:
     Description: Name of Environments
     Type: String
-    Default: Dev
     AllowedValues:
       - Dev
       - Test
       - UAT
       - Prod
+      - dev
+      - test
+      - uat
+      - prod
   VpcId:
     Description: VPC ID
     Type: String
