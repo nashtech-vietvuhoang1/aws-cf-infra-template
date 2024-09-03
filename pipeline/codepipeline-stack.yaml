@@ -42,12 +42,12 @@ Resources:
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      Name: MyCodePipeline
+      Name: !Sub "${StackName}-${Environment}-pipeline"
       RoleArn: !Ref CodePipelineServiceRoleArn
       Stages:
         - Name: Source
           Actions:
-            - Name: GitHubSource
+            - Name: !Sub "${StackName}-${Environment}-githubsource"
               ActionTypeId:
                 Category: Source
                 Owner: AWS
@@ -76,6 +76,17 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
+      Triggers:
+           - ProviderType: CodeStarSourceConnection
+             GitConfiguration:
+              SourceActionName: !Sub "${StackName}-${Environment}-githubsource"
+              Push:
+                - Branches:
+                    Includes: [!Ref GitHubBranchName]                    
+                  FilePaths:
+                    Includes: ['infra/*']
+                    Excludes: ['pipeline/*', 'github/*', '.gitignore','deploy', 'README.md', 'LICENSE', 'setup-pipeline', 'verify']
+                         
       ArtifactStore:
         Type: S3
         Location: !Ref ArtifactBucket
@@ -90,4 +101,3 @@ Resources:
               - CodePipeline
         - Key: Env
           Value: !Ref Environment
-
