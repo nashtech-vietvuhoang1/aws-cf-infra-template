@@ -21,6 +21,11 @@ Resources:
   CodePipelineServiceRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Join
+        - "-"
+        - - !Ref StackName
+          - !Ref Environment
+          - CodePipelineServiceRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -54,6 +59,11 @@ Resources:
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Join
+        - "-"
+        - - !Ref StackName
+          - !Ref Environment
+          - CodeBuildServiceRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -96,6 +106,11 @@ Resources:
   CloudFormationServiceRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Join
+        - "-"
+        - - !Ref StackName
+          - !Ref Environment
+          - CloudFormationServiceRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:

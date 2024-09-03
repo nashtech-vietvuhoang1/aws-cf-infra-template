@@ -22,7 +22,7 @@ Resources:
   ArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${AWS::StackName}-${Environment}-artifacts"
+      BucketName: !Sub "${StackName}-${Environment}-artifacts"
       VersioningConfiguration:
         Status: Enabled
       Tags:
