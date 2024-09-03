@@ -21,10 +21,15 @@ Parameters:
   GitHubRepositoryName:
     Description: GitHub Repository Name
     Type: String
-    Default: aws-cf-infra-template
+    Default: nashtech-vietvuhoang1/aws-cf-infra-template
   GitHubBranchName:
     Description: GitHub Branch Name
     Type: String
+  StackName:
+    Description: Name of the Application Stack
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9_\-]*'
+    ConstraintDescription: must be alphanumeric
 Resources:
   RolesStack:
     Type: AWS::CloudFormation::Stack
@@ -79,6 +84,7 @@ Resources:
         CloudFormationServiceRoleArn: !GetAtt RolesStack.Outputs.CloudFormationServiceRoleArn
         CfPackageBucket: !GetAtt S3BucketStack.Outputs.CfPackageBucket
         BastionHostKeyName: !Ref BastionHostKeyName
+        AppStackName: !Ref StackName
       Tags:
         - Key: Deployment
           Value: !Ref AWS::StackName

@@ -131,7 +131,6 @@ Resources:
                   - "iam:AttachRolePolicy"
                   - "iam:DetachRolePolicy"
                   - "iam:PutRolePolicy"
-                  - "iam:PassRole"
                   - "iam:GetRole"
                   - "iam:GetRolePolicy"
                   - "iam:ListRolePolicies"

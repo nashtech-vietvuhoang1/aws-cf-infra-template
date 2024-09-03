@@ -17,6 +17,11 @@ Parameters:
     Type: String
     AllowedPattern: '[a-zA-Z0-9_\-]*'
     ConstraintDescription: must be alphanumeric
+  AppStackName:
+    Description: Name of the Stack
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9_\-]*'
+    ConstraintDescription: must be alphanumeric
   CodeBuildServiceRoleArn:
     Description: CodeBuild Service Role ARN
     Type: String
@@ -73,7 +78,7 @@ Resources:
             Value: !Ref CfPackageBucket
             Type: PLAINTEXT
           - Name: STACKNAME
-            Value: !Ref StackName
+            Value: !Ref AppStackName
             Type: PLAINTEXT
           - Name: BASTION_HOST_KEY_NAME
             Value: !Ref BastionHostKeyName

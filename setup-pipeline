@@ -9,6 +9,7 @@ usage() {
     echo ${APPNAME}
     echo "Environment variables:"
     echo " STACKNAME                 [REQUIRED]: your cloudformation stack name"
+    echo " APP_STACKNAME             [REQUIRED]: your cloudformation application stack name"
     echo " S3_BUCKET                 [REQUIRED]: S3 bucket to store the tempolary template file"    
     echo " TARGET_ENV                [REQUIRED]: environment where the stack will be deployed. Valid values: dev|test|uat|prod"    
     echo " GIT_BRANCH                [OPTIONAL]: GitHub branch name"    
@@ -68,6 +69,15 @@ if [ -z "${BASTION_HOST_KEY_NAME}" ]; then
 else 
   BASTION_HOST_KEY_NAME_PARAM="ParameterKey=BastionHostKeyName,ParameterValue=${BASTION_HOST_KEY_NAME}"
   PARAMETERS="${PARAMETERS} ${BASTION_HOST_KEY_NAME_PARAM}"
+fi
+
+
+if [ -z "${APP_STACKNAME}" ]; then
+  usage "Please provide the applcation stackname"
+  exit 1
+else 
+  APP_STACKNAME_PARAM="ParameterKey=StackName,ParameterValue=${APP_STACKNAME}"
+  PARAMETERS="${PARAMETERS} ${APP_STACKNAME_PARAM}"
 fi
 
 GIT_BRANCH_PARAM=""
