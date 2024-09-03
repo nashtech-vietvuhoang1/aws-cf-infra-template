@@ -26,7 +26,7 @@ Parameters:
   GitHubRepositoryName:
     Description: GitHub Repository Name
     Type: String
-    Default: aws-cf-infra-template
+    Default: nashtech-vietvuhoang1/aws-cf-infra-template
   GitHubBranchName:
     Description: GitHub Branch Name
     Type: String
