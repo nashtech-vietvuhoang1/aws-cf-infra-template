@@ -57,7 +57,7 @@ if [ ! -z "${GIT_CONNECTION_ARN}" ]; then
   CONNECTION_ARN="ParameterKey=GitHubConnectionArn,ParameterValue=${GIT_CONNECTION_ARN}"
   PARAMETERS="${PARAMETERS} ${CONNECTION_ARN}"
 else
-  usage "Please provide the CodeStart Connection Arn"
+  usage "Please provide the CodeStar Connection Arn"
   exit 1
 fi
 
@@ -73,7 +73,7 @@ fi
 
 
 if [ -z "${APP_STACKNAME}" ]; then
-  usage "Please provide the applcation stackname"
+  usage "Please provide the application stackname"
   exit 1
 else 
   APP_STACKNAME_PARAM="ParameterKey=StackName,ParameterValue=${APP_STACKNAME}"
