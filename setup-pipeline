@@ -2,11 +2,10 @@
 
 APPNAME=$0
 TMP_FOLDER=.tmp
-INFRA_FOLDER=infra
 PIPELINE_FOLDER=pipeline
 
 usage() {
-    echo "$1"
+    echo "ERROR: $1"
     echo ${APPNAME}
     echo "Environment variables:"
     echo " STACKNAME                 [REQUIRED]: your cloudformation stack name"
@@ -20,7 +19,7 @@ usage() {
     
 }
 
-MODE=${INFRA_FOLDER}
+MODE=${PIPELINE_FOLDER}
 
 FULL_TMP_FOLDER=${TMP_FOLDER}/${MODE}
 
@@ -57,7 +56,7 @@ if [ ! -z "${GIT_CONNECTION_ARN}" ]; then
   CONNECTION_ARN="ParameterKey=GitHubConnectionArn,ParameterValue=${GIT_CONNECTION_ARN}"
   PARAMETERS="${PARAMETERS} ${CONNECTION_ARN}"
 else
-  usage "Please provide the deployment-S3-bucket-name"
+  usage "Please provide the CodeStart Connection Arn"
   exit 1
 fi
 
