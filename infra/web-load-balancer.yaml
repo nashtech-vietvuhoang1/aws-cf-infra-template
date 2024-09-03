@@ -60,7 +60,7 @@ Resources:
   WebLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: !Sub "${StackName}-${Environment}-WebLoadBalancer"
+      Name: !Sub "${StackName}-${Environment}-alb"
       Subnets:
         - !Ref PublicSubnet01Id
         - !Ref PublicSubnet02Id
