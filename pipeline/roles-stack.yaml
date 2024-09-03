@@ -154,6 +154,7 @@ Resources:
                   - "iam:DeleteRolePolicy"
                   - "iam:UpdateRole"
                   - "iam:PassRole"
+                  - "iam:TagRole"
                 Resource: "*"
               # CloudWatch Logs
               - Effect: Allow
@@ -163,6 +164,7 @@ Resources:
                   - "logs:PutLogEvents"
                   - "logs:DescribeLogGroups"
                   - "logs:DescribeLogStreams"
+                  - "logs:DeleteLogGroup"
                 Resource: "*"
               # S3 Bucket Access
               - Effect: Allow
@@ -244,6 +246,7 @@ Resources:
                   - "ecs:RunTask"
                   - "ecs:StopTask"
                   - "ecs:DescribeTasks"
+                  - "ecs:TagResource"
                 Resource: "*"
               # CloudFormation Access
               - Effect: Allow
@@ -260,6 +263,7 @@ Resources:
               - Effect: Allow
                 Action:
                  - "elasticloadbalancing:DescribeLoadBalancers"
+                 - "elasticloadbalancing:DeleteLoadBalancer"
                  - "elasticloadbalancing:DescribeListeners"
                  - "elasticloadbalancing:DescribeTargetGroups"
                  - "elasticloadbalancing:DescribeTargetHealth"
@@ -268,6 +272,7 @@ Resources:
                  - "elasticloadbalancing:CreateLoadBalancer"
                  - "elasticloadbalancing:CreateListener"
                  - "elasticloadbalancing:CreateTargetGroup"
+                 - "elasticloadbalancing:DeleteTargetGroup"
                  - "elasticloadbalancing:RegisterTargets"
                  - "elasticloadbalancing:AddTags"
                  - "elasticloadbalancing:CreateRule"
@@ -278,6 +283,7 @@ Resources:
                  - "elasticloadbalancing:DeregisterTargets"
                  - "elasticloadbalancing:RemoveTags"
                  - "elasticloadbalancing:ModifyRule"
+                 - "elasticloadbalancing:DeleteListener"
                 Resource: "*"
       Tags:
         - Key: Deployment
