@@ -165,6 +165,8 @@ Resources:
                   - "logs:DescribeLogGroups"
                   - "logs:DescribeLogStreams"
                   - "logs:DeleteLogGroup"
+                  - "logs:DeleteLogStream"
+                  - "logs:TagResource"
                 Resource: "*"
               # S3 Bucket Access
               - Effect: Allow
