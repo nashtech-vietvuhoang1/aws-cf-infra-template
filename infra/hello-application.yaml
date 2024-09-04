@@ -37,7 +37,7 @@ Mappings:
   Applications:
     HelloPython:
       Repository: ghcr.io/nashtech-vietvuhoang1/hello-python
-      Version: 0.0.3
+      Version: ghcr.io/nashtech-vietvuhoang1/hello-python:dev-5d55621
 Resources:
   WebApplicationSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -208,7 +208,7 @@ Resources:
       ExecutionRoleArn: !GetAtt ECSExecutionRole.Arn
       ContainerDefinitions:
         - Name: hello-python-container
-          Image: !Join 
+          Image: !Join
             - ":"
             - - !FindInMap [Applications, HelloPython, Repository]
               - !FindInMap [Applications, HelloPython, Version]
