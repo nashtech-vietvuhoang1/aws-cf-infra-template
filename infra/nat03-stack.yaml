@@ -4,12 +4,15 @@ Parameters:
   Environment:
     Description: Name of Environments
     Type: String
-    Default: Dev
     AllowedValues:
       - Dev
       - Test
       - UAT
       - Prod
+      - dev
+      - test
+      - uat
+      - prod
   VpcId:
     Description: VPC ID
     Type: String
@@ -23,10 +26,10 @@ Parameters:
     ConstraintDescription: must be alphanumeric
 Mappings:
   PublicSubnetConfig:
-    NatPublicSubnet02:
-      CIDR: 10.0.0.16/28
+    NatPublicSubnet03:
+      CIDR: 10.0.0.32/28
 Resources:
-  NatPublicSubnet02:
+  NatPublicSubnet03:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !Sub
@@ -36,7 +39,7 @@ Resources:
             - !GetAZs
       CidrBlock: !FindInMap
         - PublicSubnetConfig
-        - NatPublicSubnet02
+        - NatPublicSubnet03
         - CIDR
       VpcId: !Ref VpcId
       Tags:
@@ -52,15 +55,15 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatPublicSubnet02
+              - NatPublicSubnet03
         - Key: Env
           Value: !Ref Environment
-  PublicSubnetRouteTableAssociation02:
+  PublicSubnetRouteTableAssociation03:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicRouteTableId
-      SubnetId: !Ref NatPublicSubnet02
-  NatEIP02:
+      SubnetId: !Ref NatPublicSubnet03
+  NatEIP03:
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
@@ -77,14 +80,14 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatEIP02
+              - NatEIP03
         - Key: Env
           Value: !Ref Environment
-  NatGateway02:
+  NatGateway03:
     Type: AWS::EC2::NatGateway
     Properties:
-      AllocationId: !GetAtt NatEIP02.AllocationId
-      SubnetId: !Ref NatPublicSubnet02
+      AllocationId: !GetAtt NatEIP03.AllocationId
+      SubnetId: !Ref NatPublicSubnet03
       Tags:
         - Key: Application
           Value: !Ref StackName
@@ -98,13 +101,14 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - NatGateway02
+              - NatGateway03
         - Key: Env
           Value: !Ref Environment
 Outputs:
-  NatGateway02:
-    Description: NatGateway02 ID
-    Value: !Ref NatGateway02
-  NatPublicSubnet02:
-    Description: NatPublicSubnet02 ID
-    Value: !Ref NatPublicSubnet02
+  NatGateway03:
+    Description: NatGateway03 ID
+    Value: !Ref NatGateway03
+  NatPublicSubnet03:
+    Description: NatPublicSubnet03 ID
+    Value: !Ref NatPublicSubnet03
+

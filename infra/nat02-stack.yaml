@@ -1,56 +1,47 @@
-# vpc-stack.yaml
+# nat-stack.yaml
 AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Environment:
     Description: Name of Environments
     Type: String
-    Default: Dev
     AllowedValues:
       - Dev
       - Test
       - UAT
       - Prod
+      - dev
+      - test
+      - uat
+      - prod
+  VpcId:
+    Description: VPC ID
+    Type: String
+  PublicRouteTableId:
+    Description: PublicRouteTable ID
+    Type: String
   StackName:
     Description: Name of the Stack
     Type: String
     AllowedPattern: '[a-zA-Z0-9_\-]*'
     ConstraintDescription: must be alphanumeric
 Mappings:
-  VpcConfig:
-    VPC:
-      CIDR: 10.0.0.0/16
-    PublicSubnet01:
-      CIDR: 10.0.0.0/28
-    PublicSubnet02:
+  PublicSubnetConfig:
+    NatPublicSubnet02:
       CIDR: 10.0.0.16/28
-    PublicSubnet03:
-      CIDR: 10.0.0.32/28
 Resources:
-  VPC:
-    Type: AWS::EC2::VPC
+  NatPublicSubnet02:
+    Type: AWS::EC2::Subnet
     Properties:
-      EnableDnsSupport: "true"
-      EnableDnsHostnames: "true"
+      AvailabilityZone: !Sub
+        - ${AZ}
+        - AZ: !Select
+            - 0
+            - !GetAZs
       CidrBlock: !FindInMap
-        - VpcConfig
-        - VPC
+        - PublicSubnetConfig
+        - NatPublicSubnet02
         - CIDR
-      Tags:
-        - Key: Application
-          Value: !Ref StackName
-        - Key: Network
-          Value: VPC
-        - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref StackName
-              - !Ref Environment
-              - VPC
-        - Key: Env
-          Value: !Ref Environment
-  InternetGateway: 
-    Type: AWS::EC2::InternetGateway
-    Properties:
+      VpcId: !Ref VpcId
       Tags:
         - Key: Application
           Value: !Ref StackName
@@ -64,18 +55,18 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - IGW
+              - NatPublicSubnet02
         - Key: Env
           Value: !Ref Environment
-  AttachIgwGateway:
-    Type: AWS::EC2::VPCGatewayAttachment
+  PublicSubnetRouteTableAssociation02:
+    Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      InternetGatewayId: !Ref InternetGateway
-      VpcId: !Ref VPC
-  DefaultNetworkACL: 
-    Type: AWS::EC2::NetworkAcl
+      RouteTableId: !Ref PublicRouteTableId
+      SubnetId: !Ref NatPublicSubnet02
+  NatEIP02:
+    Type: AWS::EC2::EIP
     Properties:
-      VpcId: !Ref VPC
+      Domain: vpc
       Tags:
         - Key: Application
           Value: !Ref StackName
@@ -89,38 +80,34 @@ Resources:
             - "-"
             - - !Ref StackName
               - !Ref Environment
-              - DefaultNetworkACL
+              - NatEIP02
         - Key: Env
           Value: !Ref Environment
-  DefaultInboundNetworkACL: 
-    Type: AWS::EC2::NetworkAclEntry
-    DependsOn : 
-    - VPC
+  NatGateway02:
+    Type: AWS::EC2::NatGateway
     Properties:
-      NetworkAclId: !Ref DefaultNetworkACL
-      RuleNumber: 100
-      Protocol: -1
-      RuleAction: allow
-      CidrBlock: 0.0.0.0/0
-      Egress: false 
-  DefaultOutboundNetworkACL: 
-    Type: AWS::EC2::NetworkAclEntry
-    DependsOn : 
-    - VPC
-    Properties:
-      NetworkAclId: !Ref DefaultNetworkACL
-      RuleNumber: 100
-      Protocol: -1
-      RuleAction: allow
-      CidrBlock: 10.0.0.0/16
-      Egress: true
+      AllocationId: !GetAtt NatEIP02.AllocationId
+      SubnetId: !Ref NatPublicSubnet02
+      Tags:
+        - Key: Application
+          Value: !Ref StackName
+        - Key: Network
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref StackName
+              - !Ref Environment
+              - NatGateway02
+        - Key: Env
+          Value: !Ref Environment
 Outputs:
-  VpcId:
-    Description: VPC ID
-    Value: !Ref VPC
-  IgwId:
-    Description: IGW ID
-    Value: !Ref InternetGateway
-  DefaultNetworkAclId:
-    Description: DefaultNetworkACL ID
-    Value: !Ref DefaultNetworkACL
+  NatGateway02:
+    Description: NatGateway02 ID
+    Value: !Ref NatGateway02
+  NatPublicSubnet02:
+    Description: NatPublicSubnet02 ID
+    Value: !Ref NatPublicSubnet02

@@ -1,15 +1,18 @@
-# application-subnets.yaml
+# hello-application.yaml
 AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Environment:
     Description: Name of Environments
     Type: String
-    Default: Dev
     AllowedValues:
       - Dev
       - Test
       - UAT
       - Prod
+      - dev
+      - test
+      - uat
+      - prod
   VpcId:
     Description: VPC ID
     Type: String
@@ -78,7 +81,7 @@ Resources:
               Service: ecs-tasks.amazonaws.com
             Action: "sts:AssumeRole"
       Policies:
-        - PolicyName: !Sub "${StackName}-${Environment}-ECSExecutionPolicy"
+        - PolicyName: !Sub "${StackName}-${Environment}-EcsExPlcy"
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -112,7 +115,7 @@ Resources:
     DeletionPolicy: Delete
     UpdateReplacePolicy: Delete
     Properties:
-      LogGroupName: !Sub "/ecs-${StackName}-${Environment}/hello-python-log-group"
+      LogGroupName: !Sub "/ecs/${StackName}/${Environment}/hello-python"
       RetentionInDays: 7
       Tags:
         - Key: Application
@@ -134,7 +137,7 @@ Resources:
   ECSTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub "${StackName}-${Environment}-HelloPythonTG"
+      Name: !Sub "${StackName}-${Environment}-tg"
       VpcId: !Ref VpcId
       Port: 8080
       Protocol: HTTP
@@ -175,7 +178,7 @@ Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: !Sub "${StackName}-${Environment}-hello-python-cluster"
+      ClusterName: !Sub "${StackName}-${Environment}-ecscls"
       Tags:
         - Key: Application
           Value: !Ref StackName
@@ -196,7 +199,7 @@ Resources:
   ECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Sub "${StackName}-${Environment}-hello-python-task"
+      Family: !Sub "${StackName}-${Environment}-hp-tsk"
       NetworkMode: awsvpc
       Cpu: "256"
       Memory: "512"
@@ -240,7 +243,7 @@ Resources:
   ECSService:
     Type: AWS::ECS::Service
     Properties:
-      ServiceName: !Sub "${StackName}-${Environment}-hello-python-service"
+      ServiceName: !Sub "${StackName}-${Environment}-hp-svc"
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref ECSTaskDefinition
       DesiredCount: 2
