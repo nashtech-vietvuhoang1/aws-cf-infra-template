@@ -167,6 +167,13 @@ Resources:
                   - "logs:DeleteLogGroup"
                   - "logs:DeleteLogStream"
                   - "logs:TagResource"
+                  - "logs:PutRetentionPolicy"
+                  - "logs:UntagResource"
+                  - "logs:ListTagsLogGroup"
+                  - "logs:ListTagsLogStream"
+                  - "logs:GetLogEvents"
+                  - "logs:FilterLogEvents"
+                  - "logs:DescribeMetricFilters"
                 Resource: "*"
               # S3 Bucket Access
               - Effect: Allow
