@@ -37,7 +37,7 @@ Mappings:
   Applications:
     HelloPython:
       Repository: ghcr.io/nashtech-vietvuhoang1/hello-python
-      Version: "0.0.3"
+      Version: "dev-3c69463"
 Resources:
   WebApplicationSecurityGroup:
     Type: AWS::EC2::SecurityGroup
